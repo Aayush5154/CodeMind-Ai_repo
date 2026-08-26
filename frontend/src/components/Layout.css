@@ -20,10 +20,21 @@
   height: 600px;
   background: radial-gradient(
     ellipse at center,
-    rgba(124, 77, 255, 0.08) 0%,
-    rgba(0, 229, 255, 0.03) 40%,
+    rgba(148, 163, 184, 0.06) 0%,
+    rgba(226, 232, 240, 0.03) 40%,
     transparent 70%
   );
   pointer-events: none;
   z-index: 0;
+}
+
+/* ── Responsive: stack layout on mobile ──── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .layout-glow {
+    display: none;
+  }
 }

@@ -3,52 +3,52 @@
 /* ── CSS Custom Properties (Design System) ──────────────────────────────── */
 
 :root {
-  /* Primary palette – electric violet / indigo */
-  --color-primary-50: #f0ecff;
-  --color-primary-100: #d9d1ff;
-  --color-primary-200: #b8a4ff;
-  --color-primary-300: #9474ff;
-  --color-primary-400: #7c4dff;
-  --color-primary-500: #651fff;
-  --color-primary-600: #5c1bec;
-  --color-primary-700: #4e16c9;
-  --color-primary-800: #3f11a6;
-  --color-primary-900: #2b0b73;
+  /* Primary palette – refined slate / charcoal */
+  --color-primary-50: #f8fafc;
+  --color-primary-100: #f1f5f9;
+  --color-primary-200: #e2e8f0;
+  --color-primary-300: #94a3b8;
+  --color-primary-400: #64748b;
+  --color-primary-500: #475569;
+  --color-primary-600: #334155;
+  --color-primary-700: #1e293b;
+  --color-primary-800: #0f172a;
+  --color-primary-900: #020617;
 
-  /* Accent palette – cyan / teal */
-  --color-accent-400: #00e5ff;
-  --color-accent-500: #00bcd4;
-  --color-accent-600: #0097a7;
+  /* Accent palette – warm teal */
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
 
-  /* Surface palette – dark mode first */
-  --color-bg-base: #0a0a0f;
-  --color-bg-surface: #12121a;
-  --color-bg-elevated: #1a1a26;
-  --color-bg-muted: #22223a;
-  --color-bg-hover: #2a2a42;
-  --color-bg-input: #16161f;
+  /* Surface palette – clean light mode */
+  --color-bg-base: #f8f9fb;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #f1f5f9;
+  --color-bg-hover: #f1f5f9;
+  --color-bg-input: #ffffff;
 
   /* Border colors */
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-strong: rgba(255, 255, 255, 0.12);
-  --color-border-focus: var(--color-primary-400);
+  --color-border: #e8ecf1;
+  --color-border-strong: #d4dbe6;
+  --color-border-focus: var(--color-primary-500);
 
   /* Text colors */
-  --color-text-primary: #f0f0f5;
-  --color-text-secondary: #a0a0b8;
-  --color-text-muted: #6a6a84;
-  --color-text-inverse: #0a0a0f;
+  --color-text-primary: #1a1f36;
+  --color-text-secondary: #5e6a81;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
 
   /* Status colors */
-  --color-success: #00e676;
-  --color-warning: #ffab00;
-  --color-error: #ff5252;
-  --color-info: #448aff;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-400));
-  --gradient-surface: linear-gradient(180deg, var(--color-bg-surface) 0%, var(--color-bg-base) 100%);
-  --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(124, 77, 255, 0.15) 0%, transparent 70%);
+  --gradient-primary: linear-gradient(135deg, #334155, #1e293b);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+  --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(51, 65, 85, 0.04) 0%, transparent 70%);
 
   /* Typography */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -74,11 +74,11 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 24px rgba(124, 77, 255, 0.25);
-  --shadow-glow-sm: 0 0 12px rgba(124, 77, 255, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 0 3px rgba(51, 65, 85, 0.12);
+  --shadow-glow-sm: 0 0 0 2px rgba(51, 65, 85, 0.06);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -86,7 +86,7 @@
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Layout */
-  --sidebar-width: 320px;
+  --sidebar-width: 250px;
   --header-height: 64px;
 }
 
@@ -123,13 +123,13 @@ body {
 }
 
 a {
-  color: var(--color-primary-300);
+  color: var(--color-primary-500);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--color-primary-200);
+  color: var(--color-primary-700);
 }
 
 code, pre {
@@ -143,8 +143,8 @@ code, pre {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -152,7 +152,7 @@ code, pre {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-bg-muted);
+  background: var(--color-border-strong);
   border-radius: var(--radius-full);
 }
 
@@ -163,17 +163,17 @@ code, pre {
 /* ── Utility Classes ─────────────────────────────────────────────────────── */
 
 .glass {
-  background: rgba(18, 18, 26, 0.6);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--color-border);
 }
 
 .glass-strong {
-  background: rgba(18, 18, 26, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border);
 }
 
 /* ── Button Styles ───────────────────────────────────────────────────────── */
@@ -205,11 +205,11 @@ code, pre {
 .btn-primary {
   background: var(--gradient-primary);
   color: white;
-  box-shadow: var(--shadow-glow-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -218,7 +218,7 @@ code, pre {
 }
 
 .btn-secondary {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-strong);
 }
@@ -275,7 +275,7 @@ code, pre {
 
 .input:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.08);
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
@@ -359,28 +359,28 @@ code, pre {
 }
 
 .badge-success {
-  background: rgba(0, 230, 118, 0.12);
+  background: rgba(16, 185, 129, 0.1);
   color: var(--color-success);
 }
 
 .badge-warning {
-  background: rgba(255, 171, 0, 0.12);
+  background: rgba(245, 158, 11, 0.1);
   color: var(--color-warning);
 }
 
 .badge-error {
-  background: rgba(255, 82, 82, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   color: var(--color-error);
 }
 
 .badge-info {
-  background: rgba(68, 138, 255, 0.12);
+  background: rgba(59, 130, 246, 0.1);
   color: var(--color-info);
 }
 
 .badge-processing {
-  background: rgba(124, 77, 255, 0.12);
-  color: var(--color-primary-300);
+  background: rgba(51, 65, 85, 0.08);
+  color: var(--color-primary-500);
 }
 
 /* ── Markdown Content Styling ────────────────────────────────────────────── */
@@ -424,11 +424,11 @@ code, pre {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.85em;
-  color: var(--color-primary-200);
+  color: var(--color-primary-600);
 }
 
 .markdown-content pre {
-  background: var(--color-bg-base) !important;
+  background: #1e293b !important;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -441,11 +441,11 @@ code, pre {
   padding: 0;
   border-radius: 0;
   font-size: 0.85rem;
-  color: var(--color-text-primary);
+  color: #e2e8f0;
 }
 
 .markdown-content blockquote {
-  border-left: 3px solid var(--color-primary-500);
+  border-left: 3px solid var(--color-primary-400);
   padding-left: var(--space-4);
   margin-bottom: 0.75em;
   color: var(--color-text-secondary);
@@ -457,7 +457,7 @@ code, pre {
 }
 
 .markdown-content a {
-  color: var(--color-primary-300);
+  color: var(--color-primary-500);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -476,6 +476,50 @@ code, pre {
 }
 
 .markdown-content th {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-muted);
   font-weight: 600;
 }
+
+/* ── Auth Loading Screen ─────────────────────────────────────────────────── */
+
+.auth-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-base);
+}
+
+.auth-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-border-strong);
+  border-top-color: var(--color-primary-500);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Responsive Breakpoints ──────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 100%;
+  }
+
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+}
+

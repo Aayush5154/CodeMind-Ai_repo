@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Loader2,
   FolderGit2,
+  LogOut,
 } from "lucide-react";
 import {
   listRepositories,
@@ -15,6 +16,7 @@ import {
   getRepositoryStatus,
   type Repository,
 } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -28,6 +30,7 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const fetchRepos = useCallback(async () => {
@@ -129,12 +132,12 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
       {/* Logo */}
       <div className="sidebar-header">
         <button
-          className="sidebar-logo"
+          className="sidebar-logo-container"
           onClick={() => navigate("/")}
           aria-label="Go to home"
         >
-          <div className="sidebar-logo-icon">
-            <Brain size={22} />
+          <div className="sidebar-logo-icon-dark">
+            <Brain size={20} />
           </div>
           <div className="sidebar-logo-text">
             <span className="sidebar-logo-name">CodeMind</span>
@@ -222,6 +225,24 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* User & Logout */}
+      <div className="sidebar-footer">
+        <div className="sidebar-user-info">
+          <span className="sidebar-user-email">{user?.email}</span>
+        </div>
+        <button
+          className="btn btn-ghost btn-sm sidebar-logout-btn"
+          onClick={() => {
+            logout();
+            navigate("/auth");
+          }}
+          id="logout-btn"
+        >
+          <LogOut size={14} />
+          Sign Out
+        </button>
       </div>
     </aside>
   );

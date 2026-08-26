@@ -17,6 +17,8 @@ interface EnvConfig {
   LLM_MODEL: string;
   EMBEDDING_MODEL: string;
   GITHUB_TOKEN: string;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 function getEnvVar(key: string, required: boolean = true): string {
@@ -37,4 +39,6 @@ export const env: EnvConfig = {
   LLM_MODEL: getEnvVar("LLM_MODEL", false) || "gemini-1.5-flash",
   EMBEDDING_MODEL: getEnvVar("EMBEDDING_MODEL", false) || "text-embedding-004",
   GITHUB_TOKEN: getEnvVar("GITHUB_TOKEN", false),
+  JWT_SECRET: getEnvVar("JWT_SECRET", false) || "default_jwt_secret_change_me",
+  JWT_EXPIRES_IN: getEnvVar("JWT_EXPIRES_IN", false) || "7d",
 };

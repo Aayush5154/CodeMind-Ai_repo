@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
   z-index: 10;
   overflow: hidden;
 }
@@ -15,35 +16,35 @@
 
 .sidebar-header {
   padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--color-border);
 }
 
-.sidebar-logo {
+.sidebar-logo-container {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: none;
-  border: none;
+  background: white;
+  border: 1px solid #000;
+  border-radius: 12px;
   cursor: pointer;
   color: inherit;
   width: 100%;
-  padding: var(--space-2);
-  border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
+  padding: 8px 12px;
+  transition: box-shadow var(--transition-fast);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.sidebar-logo:hover {
-  background: var(--color-bg-hover);
+.sidebar-logo-container:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.sidebar-logo-icon {
+.sidebar-logo-icon-dark {
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-md);
+  background: #2a2c3a;
+  border-radius: 8px;
   color: white;
   flex-shrink: 0;
 }
@@ -55,12 +56,9 @@
 }
 
 .sidebar-logo-name {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #111827;
   line-height: 1.2;
 }
 
@@ -160,9 +158,9 @@
 }
 
 .sidebar-repo-item.active {
-  background: rgba(124, 77, 255, 0.1);
+  background: rgba(51, 65, 85, 0.06);
   color: var(--color-text-primary);
-  border-left: 2px solid var(--color-primary-400);
+  border-left: 2px solid var(--color-primary-500);
 }
 
 .sidebar-repo-item:disabled {
@@ -204,4 +202,60 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Sidebar Footer (User & Logout) ───── */
+
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.sidebar-user-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-user-email {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.sidebar-logout-btn {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.sidebar-logout-btn:hover {
+  color: var(--color-error);
+}
+
+/* ── Responsive: sidebar on mobile ──────── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    max-height: 45vh;
+  }
+
+  .sidebar-repo-list {
+    max-height: 25vh;
+  }
+
+  .sidebar-footer {
+    padding: var(--space-2) var(--space-4);
+  }
 }

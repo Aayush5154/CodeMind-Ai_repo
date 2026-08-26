@@ -60,22 +60,6 @@ export default function LandingPage({ onRepoSelect }: LandingPageProps) {
         <div className="landing-orb landing-orb-3" />
 
         <div className="landing-hero-content animate-fade-in-up">
-          <div className="landing-badge">
-            <Sparkles size={14} />
-            <span>RAG-Powered Codebase Intelligence</span>
-          </div>
-
-          <h1 className="landing-title">
-            Understand any codebase
-            <br />
-            <span className="landing-title-gradient">in seconds.</span>
-          </h1>
-
-          <p className="landing-subtitle">
-            Index any GitHub repository and ask natural-language questions.
-            Get grounded answers with exact file and line references — powered by AI.
-          </p>
-
           {/* Main CTA input */}
           <form className="landing-cta" onSubmit={handleSubmit}>
             <div className="landing-input-wrapper">
