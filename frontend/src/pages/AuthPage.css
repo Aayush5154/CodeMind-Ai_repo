@@ -64,24 +64,22 @@
 }
 
 .auth-brand-icon {
-  width: 56px;
-  height: 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-lg);
-  color: white;
-  margin-bottom: var(--space-4);
-  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-3);
 }
 
-.auth-brand-name {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-1);
+.auth-brand-logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+  transition: transform 0.3s ease;
+}
+
+.auth-brand-logo:hover {
+  transform: scale(1.05);
 }
 
 .auth-brand-tagline {
@@ -292,12 +290,11 @@
   }
 
   .auth-brand-icon {
-    width: 48px;
-    height: 48px;
+    margin-bottom: var(--space-2);
   }
 
-  .auth-brand-name {
-    font-size: 1.5rem;
+  .auth-brand-logo {
+    width: 100px;
   }
 
   .auth-bg-shape {

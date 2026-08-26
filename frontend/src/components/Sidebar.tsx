@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Brain,
   Plus,
   GitBranch,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   FolderGit2,
+  ArrowRight,
+  Crown,
+  AlertCircle,
   LogOut,
 } from "lucide-react";
 import {
@@ -30,7 +31,7 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const fetchRepos = useCallback(async () => {
@@ -136,13 +137,7 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
           onClick={() => navigate("/")}
           aria-label="Go to home"
         >
-          <div className="sidebar-logo-icon-dark">
-            <Brain size={20} />
-          </div>
-          <div className="sidebar-logo-text">
-            <span className="sidebar-logo-name">CodeMind</span>
-            <span className="sidebar-logo-tag">AI Assistant</span>
-          </div>
+          <img src="/logo.png" alt="CodeMind" className="sidebar-logo-img" />
         </button>
       </div>
 
@@ -209,7 +204,7 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
               <div className="sidebar-repo-info">
                 <GitBranch size={14} className="sidebar-repo-icon" />
                 <div className="sidebar-repo-text">
-                  <span className="sidebar-repo-name">{repo.owner}/{repo.name}</span>
+                  <span className="sidebar-repo-name">{repo.name}</span>
                   <span className="sidebar-repo-meta">
                     {repo.status === "completed"
                       ? `${repo.filesProcessed} files · ${repo.chunksCreated} chunks`
@@ -227,21 +222,35 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
         </div>
       </div>
 
-      {/* User & Logout */}
-      <div className="sidebar-footer">
-        <div className="sidebar-user-info">
-          <span className="sidebar-user-email">{user?.email}</span>
+      {/* Your Plan */}
+      <div className="sidebar-plan">
+        <div className="sidebar-plan-header">
+          <span className="sidebar-plan-title">Your Plan</span>
+          <span className="sidebar-plan-badge">Free</span>
         </div>
-        <button
-          className="btn btn-ghost btn-sm sidebar-logout-btn"
+        <p className="sidebar-plan-usage">3 / 5 repositories used</p>
+        <div className="sidebar-plan-progress">
+          <div className="sidebar-plan-progress-bar" style={{ width: "60%" }} />
+        </div>
+        <button className="sidebar-plan-btn">
+          <div className="sidebar-plan-btn-content">
+            <Crown size={14} />
+            <span>Upgrade Plan</span>
+          </div>
+          <ArrowRight size={14} />
+        </button>
+      </div>
+
+      {/* Footer Links */}
+      <div className="sidebar-footer-links">
+        <button 
+          className="sidebar-footer-link" 
           onClick={() => {
             logout();
             navigate("/auth");
           }}
-          id="logout-btn"
         >
-          <LogOut size={14} />
-          Sign Out
+          <LogOut size={16} /> Sign Out
         </button>
       </div>
     </aside>

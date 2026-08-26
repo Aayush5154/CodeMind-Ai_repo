@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Brain,
   Mail,
   Lock,
   User,
@@ -66,9 +65,8 @@ export default function AuthPage() {
         {/* Logo / Brand */}
         <div className="auth-brand">
           <div className="auth-brand-icon">
-            <Brain size={28} />
+            <img src="/logo.png" alt="CodeMind" className="auth-brand-logo" />
           </div>
-          <h1 className="auth-brand-name">CodeMind</h1>
           <p className="auth-brand-tagline">AI-Powered Codebase Intelligence</p>
         </div>
 
