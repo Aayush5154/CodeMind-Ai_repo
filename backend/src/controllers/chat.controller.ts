@@ -6,10 +6,6 @@ import { retrieveContext } from "../services/retrieval.service.js";
 import { generateAnswer, ChatHistoryMessage } from "../services/llm.service.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-/**
- * POST /api/chat/sessions
- * Creates a new chat session for a repository.
- */
 export async function createSession(
   req: Request,
   res: Response,
@@ -22,8 +18,7 @@ export async function createSession(
       throw new AppError("Repository ID is required", 400);
     }
 
-    // Verify repository exists and is indexed
-    const repository = await Repository.findById(repositoryId);
+    const repository = await Repository.findOne({ _id: repositoryId, userId: req.user!._id });
     if (!repository) {
       throw new AppError("Repository not found", 404);
     }
@@ -45,10 +40,6 @@ export async function createSession(
   }
 }
 
-/**
- * POST /api/chat
- * Asks a question about an indexed repository.
- */
 export async function askQuestion(
   req: Request,
   res: Response,
@@ -61,8 +52,7 @@ export async function askQuestion(
       throw new AppError("Repository ID and question are required", 400);
     }
 
-    // Verify repository is indexed
-    const repository = await Repository.findById(repositoryId);
+    const repository = await Repository.findOne({ _id: repositoryId, userId: req.user!._id });
     if (!repository) {
       throw new AppError("Repository not found", 404);
     }
@@ -70,7 +60,6 @@ export async function askQuestion(
       throw new AppError("Repository is not yet indexed", 400);
     }
 
-    // Get or create session
     let session;
     if (sessionId) {
       session = await ChatSession.findById(sessionId);
@@ -81,7 +70,6 @@ export async function askQuestion(
       session = await ChatSession.create({ repositoryId });
     }
 
-    // Save user message
     await Message.create({
       sessionId: session._id,
       role: "user",
@@ -89,7 +77,6 @@ export async function askQuestion(
       sources: [],
     });
 
-    // Get recent chat history for context (last 10 messages)
     const recentMessages = await Message.find({ sessionId: session._id })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -97,22 +84,19 @@ export async function askQuestion(
 
     const chatHistory: ChatHistoryMessage[] = recentMessages
       .reverse()
-      .slice(0, -1) // Exclude the message we just saved
+      .slice(0, -1)
       .map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
 
-    // Retrieve relevant code context
     const { context, sources } = await retrieveContext(
       question,
       repositoryId
     );
 
-    // Generate answer using LLM
     const answer = await generateAnswer(question, context, chatHistory);
 
-    // Save assistant message with sources
     const assistantMessage = await Message.create({
       sessionId: session._id,
       role: "assistant",
@@ -134,10 +118,6 @@ export async function askQuestion(
   }
 }
 
-/**
- * GET /api/chat/sessions/:id/messages
- * Returns the chat history for a session.
- */
 export async function getChatHistory(
   req: Request,
   res: Response,

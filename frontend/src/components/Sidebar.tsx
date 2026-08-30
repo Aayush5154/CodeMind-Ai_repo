@@ -39,7 +39,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
       const res = await listRepositories();
       setRepos(res.data);
     } catch {
-      // silently fail
     }
   }, []);
 
@@ -47,7 +46,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
     fetchRepos();
   }, [fetchRepos]);
 
-  // Poll for processing repos
   useEffect(() => {
     const processingRepos = repos.filter((r) => r.status === "processing");
     if (processingRepos.length === 0) return;
@@ -64,7 +62,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
             }
           }
         } catch {
-          // ignore
         }
       }
       if (anyUpdated) {
@@ -86,7 +83,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
       setShowInput(false);
       await fetchRepos();
 
-      // Select the new repo and navigate to chat
       const statusRes = await getRepositoryStatus(res.repositoryId);
       onRepoSelect(statusRes.data);
       navigate("/chat");
@@ -130,7 +126,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
 
   return (
     <aside className="sidebar glass-strong">
-      {/* Logo */}
       <div className="sidebar-header">
         <button
           className="sidebar-logo-container"
@@ -141,7 +136,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
         </button>
       </div>
 
-      {/* Repo List */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span className="sidebar-section-title">Repositories</span>
@@ -158,7 +152,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
           </button>
         </div>
 
-        {/* Add repo input */}
         {showInput && (
           <div className="sidebar-add-repo animate-fade-in-up">
             <input
@@ -185,7 +178,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
           </div>
         )}
 
-        {/* Repo list */}
         <div className="sidebar-repo-list">
           {repos.length === 0 && !showInput && (
             <p className="sidebar-empty">No repositories indexed yet</p>
@@ -222,7 +214,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
         </div>
       </div>
 
-      {/* Your Plan */}
       <div className="sidebar-plan">
         <div className="sidebar-plan-header">
           <span className="sidebar-plan-title">Your Plan</span>
@@ -241,7 +232,6 @@ export default function Sidebar({ activeRepo, onRepoSelect }: SidebarProps) {
         </button>
       </div>
 
-      {/* Footer Links */}
       <div className="sidebar-footer-links">
         <button 
           className="sidebar-footer-link" 

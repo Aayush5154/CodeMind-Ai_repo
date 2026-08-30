@@ -1,8 +1,5 @@
 import path from "path";
 
-/**
- * File extensions that CodeMind can index and understand.
- */
 export const SUPPORTED_EXTENSIONS = new Set([
   ".js",
   ".jsx",
@@ -43,9 +40,6 @@ export const SUPPORTED_EXTENSIONS = new Set([
   ".env.example",
 ]);
 
-/**
- * Paths/patterns to always ignore during indexing.
- */
 const IGNORED_PATTERNS: RegExp[] = [
   /node_modules\//,
   /\.git\//,
@@ -64,14 +58,11 @@ const IGNORED_PATTERNS: RegExp[] = [
   /\.pytest_cache\//,
   /venv\//,
   /\.venv\//,
-  /target\//,       // Rust/Java build output
+  /target\//,
   /bin\//,
-  /obj\//,          // .NET build output
+  /obj\//,
 ];
 
-/**
- * Specific filenames to always ignore.
- */
 const IGNORED_FILES = new Set([
   "package-lock.json",
   "yarn.lock",
@@ -90,35 +81,26 @@ const IGNORED_FILES = new Set([
   ".eslintignore",
 ]);
 
-/** Maximum file size in bytes (100KB) */
 const MAX_FILE_SIZE = 100 * 1024;
 
-/**
- * Determines whether a file should be processed during indexing.
- */
 export function shouldProcessFile(filePath: string, size?: number): boolean {
-  // Check size limit
   if (size !== undefined && size > MAX_FILE_SIZE) {
     return false;
   }
 
-  // Check ignored paths
   for (const pattern of IGNORED_PATTERNS) {
     if (pattern.test(filePath)) {
       return false;
     }
   }
 
-  // Check ignored filenames
   const basename = path.basename(filePath);
   if (IGNORED_FILES.has(basename)) {
     return false;
   }
 
-  // Check extension
   const ext = path.extname(filePath).toLowerCase();
 
-  // Special case: Dockerfile has no extension
   if (basename === "Dockerfile" || basename.startsWith("Dockerfile.")) {
     return true;
   }
@@ -126,10 +108,6 @@ export function shouldProcessFile(filePath: string, size?: number): boolean {
   return SUPPORTED_EXTENSIONS.has(ext);
 }
 
-/**
- * Maps a file extension to the LangChain RecursiveCharacterTextSplitter language key.
- * Returns undefined for unsupported languages (falls back to generic splitter).
- */
 export function getLanguageFromExtension(
   filePath: string
 ): string | undefined {
@@ -137,7 +115,7 @@ export function getLanguageFromExtension(
   const map: Record<string, string> = {
     ".js": "js",
     ".jsx": "js",
-    ".ts": "js",     // LangChain uses JS separators for TS too
+    ".ts": "js",
     ".tsx": "js",
     ".py": "python",
     ".java": "java",
@@ -160,9 +138,6 @@ export function getLanguageFromExtension(
   return map[ext];
 }
 
-/**
- * Returns a human-readable language name from a file path.
- */
 export function getLanguageName(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   const map: Record<string, string> = {

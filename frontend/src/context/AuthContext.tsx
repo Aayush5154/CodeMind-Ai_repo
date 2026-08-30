@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing token on mount
   useEffect(() => {
     const token = getToken();
     if (!token) {
@@ -44,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(res.data);
       })
       .catch(() => {
-        // Token is invalid/expired — clear it
         removeToken();
         setUser(null);
       })

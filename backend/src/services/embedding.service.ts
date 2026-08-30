@@ -3,9 +3,6 @@ import { env } from "../config/env.js";
 
 let embeddingsInstance: GoogleGenerativeAIEmbeddings | null = null;
 
-/**
- * Returns a singleton OpenAI embeddings instance.
- */
 function getEmbeddings(): GoogleGenerativeAIEmbeddings {
   if (!embeddingsInstance) {
     embeddingsInstance = new GoogleGenerativeAIEmbeddings({
@@ -16,10 +13,6 @@ function getEmbeddings(): GoogleGenerativeAIEmbeddings {
   return embeddingsInstance;
 }
 
-/**
- * Generates embeddings for an array of text strings.
- * Processes in batches to respect API limits.
- */
 export async function embedTexts(
   texts: string[],
   batchSize: number = 100
@@ -27,7 +20,6 @@ export async function embedTexts(
   const embeddings = getEmbeddings();
   const allEmbeddings: number[][] = [];
 
-  // Filter out empty/whitespace-only texts that the API can't embed
   const validTexts = texts.map((t) => t.trim()).filter((t) => t.length > 0);
 
   if (validTexts.length === 0) {
@@ -39,7 +31,6 @@ export async function embedTexts(
     const batch = validTexts.slice(i, i + batchSize);
     const batchEmbeddings = await embeddings.embedDocuments(batch);
 
-    // Validate that embeddings are not empty
     for (let j = 0; j < batchEmbeddings.length; j++) {
       if (!batchEmbeddings[j] || batchEmbeddings[j].length === 0) {
         console.warn(
@@ -51,7 +42,6 @@ export async function embedTexts(
     allEmbeddings.push(...batchEmbeddings);
   }
 
-  // Check if all embeddings are empty
   const nonEmpty = allEmbeddings.filter((e) => e && e.length > 0);
   if (nonEmpty.length === 0) {
     throw new Error(
@@ -69,9 +59,6 @@ export async function embedTexts(
   return allEmbeddings;
 }
 
-/**
- * Generates an embedding for a single query string.
- */
 export async function embedQuery(text: string): Promise<number[]> {
   const embeddings = getEmbeddings();
   return embeddings.embedQuery(text);

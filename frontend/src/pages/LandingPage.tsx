@@ -144,9 +144,6 @@ export default function LandingPage({ onRepoSelect }: LandingPageProps) {
       <section className="landing-features">
         <div className="landing-feature-grid">
           <div className="landing-feature-card animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            <div className="landing-feature-icon-wrapper color-green">
-              <Search size={22} />
-            </div>
             <h3 className="landing-feature-title">Semantic Search</h3>
             <p className="landing-feature-desc">
               Find relevant code, functions, and concepts using natural language queries.
@@ -155,9 +152,6 @@ export default function LandingPage({ onRepoSelect }: LandingPageProps) {
           </div>
 
           <div className="landing-feature-card animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-            <div className="landing-feature-icon-wrapper color-blue">
-              <MessageSquare size={22} />
-            </div>
             <h3 className="landing-feature-title">Conversational AI</h3>
             <p className="landing-feature-desc">
               Ask follow-up questions and get context-aware answers about your codebase.
@@ -166,9 +160,6 @@ export default function LandingPage({ onRepoSelect }: LandingPageProps) {
           </div>
 
           <div className="landing-feature-card animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-            <div className="landing-feature-icon-wrapper color-purple">
-              <Code2 size={22} />
-            </div>
             <h3 className="landing-feature-title">Source References</h3>
             <p className="landing-feature-desc">
               Every answer comes with accurate file paths and line numbers you can trust.
@@ -177,9 +168,6 @@ export default function LandingPage({ onRepoSelect }: LandingPageProps) {
           </div>
 
           <div className="landing-feature-card animate-fade-in-up" style={{ animationDelay: "400ms" }}>
-            <div className="landing-feature-icon-wrapper color-orange">
-              <GitBranch size={22} />
-            </div>
             <h3 className="landing-feature-title">GitHub Integration</h3>
             <p className="landing-feature-desc">
               Connect any public GitHub repository and let CodeMind index it automatically.

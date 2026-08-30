@@ -10,7 +10,6 @@ function generateToken(userId: string): string {
   });
 }
 
-// POST /api/auth/register
 export async function register(
   req: Request,
   res: Response,
@@ -27,7 +26,6 @@ export async function register(
       throw new AppError("Password must be at least 6 characters", 400);
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       throw new AppError("An account with this email already exists", 409);
@@ -58,7 +56,6 @@ export async function register(
   }
 }
 
-// POST /api/auth/login
 export async function login(
   req: Request,
   res: Response,
@@ -71,7 +68,6 @@ export async function login(
       throw new AppError("Email and password are required", 400);
     }
 
-    // Find user with password field included
     const user = await User.findOne({ email: email.toLowerCase() }).select(
       "+password"
     );
@@ -103,7 +99,6 @@ export async function login(
   }
 }
 
-// GET /api/auth/me
 export async function getMe(
   req: Request,
   res: Response,

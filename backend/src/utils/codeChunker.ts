@@ -24,10 +24,6 @@ interface ChunkerOptions {
 const DEFAULT_CHUNK_SIZE = 1500;
 const DEFAULT_CHUNK_OVERLAP = 200;
 
-/**
- * Computes the line range of a chunk within the original file content.
- * Uses character offset tracking to determine accurate line numbers.
- */
 function computeLineRange(
   fullContent: string,
   chunkContent: string,
@@ -36,7 +32,6 @@ function computeLineRange(
   const chunkStartIndex = fullContent.indexOf(chunkContent, searchStartOffset);
 
   if (chunkStartIndex === -1) {
-    // Fallback: if exact match fails (due to overlap trimming), use rough estimate
     const linesBefore = fullContent
       .substring(0, searchStartOffset)
       .split("\n").length;
@@ -48,7 +43,6 @@ function computeLineRange(
     };
   }
 
-  // Count lines up to the start of this chunk
   const startLine =
     fullContent.substring(0, chunkStartIndex).split("\n").length;
   const chunkLines = chunkContent.split("\n").length;
@@ -61,12 +55,6 @@ function computeLineRange(
   };
 }
 
-/**
- * Splits a source file into code-aware chunks with metadata.
- *
- * Uses LangChain's RecursiveCharacterTextSplitter with language-specific
- * separators to keep logical code blocks (functions, classes) together.
- */
 export async function chunkFile(
   filePath: string,
   content: string,
@@ -100,7 +88,6 @@ export async function chunkFile(
       });
     }
   } catch {
-    // If language not supported by LangChain, fall back to generic
     splitter = new RecursiveCharacterTextSplitter({
       chunkSize,
       chunkOverlap,
@@ -134,9 +121,6 @@ export async function chunkFile(
   return chunks;
 }
 
-/**
- * Chunks multiple files in sequence, returning all chunks with metadata.
- */
 export async function chunkFiles(
   files: { path: string; content: string }[],
   repositoryId: string,

@@ -1,9 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
-/* ── CSS Custom Properties (Design System) ──────────────────────────────── */
-
 :root {
-  /* Primary palette – refined slate / charcoal */
+
   --color-primary-50: #f8fafc;
   --color-primary-100: #f1f5f9;
   --color-primary-200: #e2e8f0;
@@ -15,12 +13,10 @@
   --color-primary-800: #0f172a;
   --color-primary-900: #020617;
 
-  /* Accent palette – warm teal */
   --color-accent-400: #34d399;
   --color-accent-500: #10b981;
   --color-accent-600: #059669;
 
-  /* Surface palette – clean light mode */
   --color-bg-base: #f8fafc;
   --color-bg-surface: #fafafa;
   --color-bg-elevated: #ffffff;
@@ -28,33 +24,27 @@
   --color-bg-hover: #f1f5f9;
   --color-bg-input: #ffffff;
 
-  /* Border colors */
   --color-border: #f1f5f9;
   --color-border-strong: #e2e8f0;
   --color-border-focus: var(--color-primary-500);
 
-  /* Text colors */
   --color-text-primary: #111827;
   --color-text-secondary: #4b5563;
   --color-text-muted: #9ca3af;
   --color-text-inverse: #ffffff;
 
-  /* Status colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
-  /* Gradients */
   --gradient-primary: linear-gradient(135deg, #4f46e5, #3b82f6);
   --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(51, 65, 85, 0.04) 0%, transparent 70%);
 
-  /* Typography */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 
-  /* Spacing scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -66,31 +56,25 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Border radius */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
   --shadow-glow: 0 0 0 3px rgba(51, 65, 85, 0.12);
   --shadow-glow-sm: 0 0 0 2px rgba(51, 65, 85, 0.06);
 
-  /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Layout */
   --sidebar-width: 270px;
   --header-height: 64px;
 }
-
-/* ── Reset & Base ────────────────────────────────────────────────────────── */
 
 *,
 *::before,
@@ -141,7 +125,6 @@ code, pre {
   color: white;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -160,8 +143,6 @@ code, pre {
   background: var(--color-text-muted);
 }
 
-/* ── Utility Classes ─────────────────────────────────────────────────────── */
-
 .glass {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
@@ -175,8 +156,6 @@ code, pre {
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--color-border);
 }
-
-/* ── Button Styles ───────────────────────────────────────────────────────── */
 
 .btn {
   display: inline-flex;
@@ -254,8 +233,6 @@ code, pre {
   border-radius: var(--radius-lg);
 }
 
-/* ── Input Styles ────────────────────────────────────────────────────────── */
-
 .input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
@@ -277,8 +254,6 @@ code, pre {
   border-color: var(--color-border-focus);
   box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.08);
 }
-
-/* ── Animations ──────────────────────────────────────────────────────────── */
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -345,8 +320,6 @@ code, pre {
   animation: spin 1s linear infinite;
 }
 
-/* ── Badge / Tag ─────────────────────────────────────────────────────────── */
-
 .badge {
   display: inline-flex;
   align-items: center;
@@ -382,8 +355,6 @@ code, pre {
   background: rgba(51, 65, 85, 0.08);
   color: var(--color-primary-500);
 }
-
-/* ── Markdown Content Styling ────────────────────────────────────────────── */
 
 .markdown-content {
   font-size: 0.9375rem;
@@ -480,8 +451,6 @@ code, pre {
   font-weight: 600;
 }
 
-/* ── Auth Loading Screen ─────────────────────────────────────────────────── */
-
 .auth-loading {
   min-height: 100vh;
   display: flex;
@@ -498,8 +467,6 @@ code, pre {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-
-/* ── Responsive Breakpoints ──────────────────────────────────────────────── */
 
 @media (max-width: 1024px) {
   :root {
@@ -522,4 +489,3 @@ code, pre {
     font-size: 14px;
   }
 }
-

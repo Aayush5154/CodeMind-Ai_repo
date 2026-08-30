@@ -41,15 +41,7 @@ function getHeaders(): Record<string, string> {
   return headers;
 }
 
-/**
- * Validates and extracts owner/repo from a GitHub URL.
- */
 export function parseGitHubUrl(url: string): RepoInfo {
-  // Support formats:
-  //   https://github.com/owner/repo
-  //   https://github.com/owner/repo.git
-  //   https://github.com/owner/repo/tree/branch
-  //   github.com/owner/repo
   const patterns = [
     /^(?:https?:\/\/)?github\.com\/([^\/\s]+)\/([^\/\s#?.]+)/i,
   ];
@@ -67,9 +59,6 @@ export function parseGitHubUrl(url: string): RepoInfo {
   throw new AppError("Invalid GitHub repository URL", 400);
 }
 
-/**
- * Gets the default branch of a repository.
- */
 export async function getDefaultBranch(
   owner: string,
   repo: string
@@ -93,9 +82,6 @@ export async function getDefaultBranch(
   }
 }
 
-/**
- * Fetches the full file tree of a repository recursively.
- */
 export async function fetchRepoTree(
   owner: string,
   repo: string,
@@ -113,7 +99,6 @@ export async function fetchRepoTree(
       );
     }
 
-    // Return only blobs (files), not trees (directories)
     return response.data.tree.filter((item) => item.type === "blob");
   } catch (error: any) {
     if (error.response?.status === 404) {
@@ -126,10 +111,6 @@ export async function fetchRepoTree(
   }
 }
 
-/**
- * Fetches the content of a single file from the repository.
- * Uses the GitHub Contents API which returns base64-encoded content.
- */
 export async function fetchFileContent(
   owner: string,
   repo: string,
@@ -159,7 +140,6 @@ export async function fetchFileContent(
     if (error.response?.status === 404) {
       throw new AppError(`File not found: ${path}`, 404);
     }
-    // GitHub 403 can mean rate-limit OR file-too-large (>1MB)
     if (error.response?.status === 403) {
       const rateLimitRemaining = error.response?.headers?.["x-ratelimit-remaining"];
       if (rateLimitRemaining === "0" || rateLimitRemaining === 0) {
@@ -168,7 +148,6 @@ export async function fetchFileContent(
           429
         );
       }
-      // File too large for Contents API (>1MB) — skip gracefully
       console.warn(`Skipping large file: ${path}`);
       return { path, content: "" };
     }
@@ -176,9 +155,6 @@ export async function fetchFileContent(
   }
 }
 
-/**
- * Fetches multiple files in parallel with concurrency control.
- */
 export async function fetchFilesInBatches(
   owner: string,
   repo: string,

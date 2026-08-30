@@ -17,7 +17,6 @@ function AppRoutes() {
     setSessionId(null);
   }, []);
 
-  // Show nothing while checking auth status
   if (isLoading) {
     return (
       <div className="auth-loading">
@@ -28,7 +27,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Auth page — public, redirects if already logged in */}
       <Route
         path="/auth"
         element={
@@ -36,7 +34,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Protected routes — redirect to /auth if not logged in */}
       <Route
         element={
           isAuthenticated ? (
@@ -66,7 +63,6 @@ function AppRoutes() {
         />
       </Route>
 
-      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

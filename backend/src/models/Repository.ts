@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IRepository extends Document {
+  userId: mongoose.Types.ObjectId;
   repoUrl: string;
   owner: string;
   name: string;
@@ -16,6 +17,7 @@ export interface IRepository extends Document {
 
 const repositorySchema = new Schema<IRepository>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     repoUrl: { type: String, required: true },
     owner: { type: String, required: true },
     name: { type: String, required: true },
@@ -33,8 +35,7 @@ const repositorySchema = new Schema<IRepository>(
   { timestamps: true }
 );
 
-// Prevent duplicate indexing of the same repo
-repositorySchema.index({ owner: 1, name: 1 }, { unique: true });
+repositorySchema.index({ userId: 1, owner: 1, name: 1 }, { unique: true });
 
 export const Repository = mongoose.model<IRepository>(
   "Repository",

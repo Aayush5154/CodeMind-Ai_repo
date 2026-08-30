@@ -4,9 +4,6 @@ import { env } from "../config/env.js";
 
 let llmInstance: ChatGoogleGenerativeAI | null = null;
 
-/**
- * Returns a singleton LLM instance.
- */
 function getLLM(): ChatGoogleGenerativeAI {
   if (!llmInstance) {
     llmInstance = new ChatGoogleGenerativeAI({
@@ -47,9 +44,6 @@ export interface ChatHistoryMessage {
   content: string;
 }
 
-/**
- * Generates an answer using the LLM with RAG context and optional chat history.
- */
 export async function generateAnswer(
   question: string,
   context: string,
@@ -57,7 +51,6 @@ export async function generateAnswer(
 ): Promise<string> {
   const llm = getLLM();
 
-  // Convert chat history to LangChain message format
   const history = chatHistory.map((msg) => {
     if (msg.role === "user") {
       return ["human" as const, msg.content] as [string, string];

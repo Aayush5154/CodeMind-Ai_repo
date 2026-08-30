@@ -4,13 +4,10 @@ import { env } from "../config/env.js";
 import { CodeChunk } from "../utils/codeChunker.js";
 
 const COLLECTION_NAME = "codebase_chunks";
-const VECTOR_SIZE = 3072; // gemini-embedding-001 dimension
+const VECTOR_SIZE = 3072;
 
 let client: QdrantClient | null = null;
 
-/**
- * Returns a singleton Qdrant client.
- */
 function getClient(): QdrantClient {
   if (!client) {
     client = new QdrantClient({
@@ -21,10 +18,6 @@ function getClient(): QdrantClient {
   return client;
 }
 
-/**
- * Ensures the codebase_chunks collection exists in Qdrant.
- * Creates it with Cosine distance if it doesn't exist.
- */
 export async function ensureCollection(): Promise<void> {
   const qdrant = getClient();
 
@@ -40,8 +33,6 @@ export async function ensureCollection(): Promise<void> {
       await createPayloadIndexes(qdrant);
       console.log(`✓ Created Qdrant collection: ${COLLECTION_NAME}`);
     } else {
-      // Guard against a collection created with a different vector size
-      // (e.g. leftover from a different embedding model) — recreate it.
       const info = await qdrant.getCollection(COLLECTION_NAME);
       const config = info.config?.params?.vectors as
         | { size?: number }
@@ -60,7 +51,6 @@ export async function ensureCollection(): Promise<void> {
         await createPayloadIndexes(qdrant);
         console.log(`✓ Recreated Qdrant collection: ${COLLECTION_NAME}`);
       } else {
-        // Ensure indexes exist on existing collection (idempotent)
         await createPayloadIndexes(qdrant);
       }
     }
@@ -70,10 +60,6 @@ export async function ensureCollection(): Promise<void> {
   }
 }
 
-/**
- * Creates payload indexes required for filtering.
- * Qdrant needs a keyword index on repositoryId to use it in query filters.
- */
 async function createPayloadIndexes(qdrant: QdrantClient): Promise<void> {
   try {
     await qdrant.createPayloadIndex(COLLECTION_NAME, {
@@ -82,17 +68,12 @@ async function createPayloadIndexes(qdrant: QdrantClient): Promise<void> {
       wait: true,
     });
   } catch (error: any) {
-    // Ignore "already exists" errors
     if (!error.message?.includes("already exists")) {
       console.warn("Failed to create payload index:", error.message);
     }
   }
 }
 
-/**
- * Upserts code chunks with their embeddings into Qdrant.
- * Processes in batches of 100 points.
- */
 export async function upsertChunks(
   chunks: CodeChunk[],
   embeddings: number[][]
@@ -149,10 +130,6 @@ export interface SearchResult {
   score: number;
 }
 
-/**
- * Searches Qdrant for code chunks similar to the query vector,
- * filtered by repository ID.
- */
 export async function searchSimilar(
   queryVector: number[],
   repositoryId: string,
@@ -184,10 +161,6 @@ export async function searchSimilar(
   }));
 }
 
-/**
- * Deletes all vectors for a specific repository from Qdrant.
- * Used for re-indexing.
- */
 export async function deleteByRepository(
   repositoryId: string
 ): Promise<void> {

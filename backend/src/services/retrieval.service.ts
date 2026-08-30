@@ -10,20 +10,11 @@ export interface RetrievalResult {
   }[];
 }
 
-/**
- * Retrieves relevant code context for a user question from the vector store.
- *
- * Pipeline:
- * 1. Embed the question
- * 2. Search Qdrant for similar chunks (filtered by repositoryId)
- * 3. Format results into a context string + source metadata
- */
 export async function retrieveContext(
   question: string,
   repositoryId: string,
   topK: number = 5
 ): Promise<RetrievalResult> {
-  // Step 1: Embed the question
   let queryVector: number[];
   try {
     queryVector = await embedQuery(question);
@@ -32,7 +23,6 @@ export async function retrieveContext(
     throw new Error(`Failed to generate query embedding: ${err.message}`);
   }
 
-  // Step 2: Search for similar code chunks
   let results: SearchResult[];
   try {
     results = await searchSimilar(queryVector, repositoryId, topK);
@@ -48,7 +38,6 @@ export async function retrieveContext(
     };
   }
 
-  // Step 3: Format context
   const contextParts = results.map((result, index) => {
     const lineInfo =
       result.startLine && result.endLine
@@ -65,7 +54,6 @@ export async function retrieveContext(
 
   const context = contextParts.join("\n");
 
-  // Deduplicate sources by file path
   const sourceMap = new Map<
     string,
     { filePath: string; startLine: number; endLine: number }

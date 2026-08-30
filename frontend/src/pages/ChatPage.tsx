@@ -39,17 +39,14 @@ export default function ChatPage({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Reset messages when repo changes
   useEffect(() => {
     setMessages([]);
     setError(null);
@@ -62,7 +59,6 @@ export default function ChatPage({
     setInput("");
     setError(null);
 
-    // Add user message
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -70,7 +66,6 @@ export default function ChatPage({
     };
     setMessages((prev) => [...prev, userMsg]);
 
-    // Add streaming placeholder
     const assistantId = `assistant-${Date.now()}`;
     setMessages((prev) => [
       ...prev,
@@ -87,12 +82,10 @@ export default function ChatPage({
     try {
       const res = await askQuestion(repository._id, question, sessionId || undefined);
 
-      // Update session ID
       if (!sessionId && res.data.sessionId) {
         onSessionCreated(res.data.sessionId);
       }
 
-      // Replace streaming placeholder with real answer
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantId
@@ -107,7 +100,6 @@ export default function ChatPage({
       );
     } catch (err: any) {
       setError(err.message || "Failed to get response");
-      // Remove streaming placeholder
       setMessages((prev) => prev.filter((msg) => msg.id !== assistantId));
     } finally {
       setLoading(false);
@@ -121,7 +113,6 @@ export default function ChatPage({
     }
   };
 
-  // Auto-resize textarea
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     const el = e.target;
@@ -133,7 +124,6 @@ export default function ChatPage({
 
   return (
     <div className="chat">
-      {/* Chat Header */}
       <header className="chat-header glass-strong">
         <div className="chat-header-info">
           <h2 className="chat-header-title">
@@ -147,7 +137,6 @@ export default function ChatPage({
         </div>
       </header>
 
-      {/* Messages */}
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty animate-fade-in-up">
@@ -248,7 +237,6 @@ export default function ChatPage({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="chat-input-area">
         <div className="chat-input-wrapper glass-strong">
           <textarea

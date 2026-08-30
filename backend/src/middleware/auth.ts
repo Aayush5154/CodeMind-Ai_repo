@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { User, type IUser } from "../models/User.js";
 
-// Extend Express Request to include user
 declare global {
   namespace Express {
     interface Request {
@@ -29,7 +28,6 @@ export async function authenticate(
     }
 
     const token = authHeader.split(" ")[1];
-
     const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string };
 
     const user = await User.findById(decoded.id);

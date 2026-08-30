@@ -1,7 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-// ── Token Management ──────────────────────────────────────────────────────
-
 const TOKEN_KEY = "codemind_token";
 
 export function getToken(): string | null {
@@ -16,8 +14,6 @@ export function removeToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-// ── HTTP Client ───────────────────────────────────────────────────────────
-
 async function request<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -27,7 +23,6 @@ async function request<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  // Inject auth token if available
   const token = getToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -47,8 +42,6 @@ async function request<T>(
   return data;
 }
 
-// ── Auth Types ────────────────────────────────────────────────────────────
-
 export interface AuthUser {
   _id: string;
   name: string;
@@ -63,8 +56,6 @@ export interface AuthResponse {
     token: string;
   };
 }
-
-// ── Auth API ──────────────────────────────────────────────────────────────
 
 export async function authRegister(
   name: string,
@@ -94,8 +85,6 @@ export async function authGetMe(): Promise<{
   return request("/auth/me");
 }
 
-// ── Repository Types ──────────────────────────────────────────────────────
-
 export interface Repository {
   _id: string;
   repoUrl: string;
@@ -110,8 +99,6 @@ export interface Repository {
   createdAt: string;
   updatedAt: string;
 }
-
-// ── Chat Types ────────────────────────────────────────────────────────────
 
 export interface Source {
   filePath: string;
@@ -138,8 +125,6 @@ export interface AskResponse {
   };
 }
 
-// ── Repository API ────────────────────────────────────────────────────────
-
 export async function indexRepository(
   repoUrl: string
 ): Promise<{ success: boolean; repositoryId: string; status: string }> {
@@ -161,8 +146,6 @@ export async function listRepositories(): Promise<{
 }> {
   return request("/repositories");
 }
-
-// ── Chat API ──────────────────────────────────────────────────────────────
 
 export async function createChatSession(
   repositoryId: string

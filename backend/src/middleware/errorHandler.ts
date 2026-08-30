@@ -18,7 +18,6 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  // Log full error details for debugging (API client errors often hide details in .data)
   const errAny = err as any;
   if (errAny.data || errAny.status) {
     console.error("Error:", err.message, {
@@ -38,7 +37,6 @@ export function errorHandler(
     return;
   }
 
-  // Mongoose validation error
   if (err.name === "ValidationError") {
     res.status(400).json({
       success: false,
@@ -47,7 +45,6 @@ export function errorHandler(
     return;
   }
 
-  // Mongoose duplicate key error
   if (err.name === "MongoServerError" && (err as any).code === 11000) {
     res.status(409).json({
       success: false,
@@ -56,7 +53,6 @@ export function errorHandler(
     return;
   }
 
-  // Default to 500
   res.status(500).json({
     success: false,
     message: "Internal server error",

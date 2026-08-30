@@ -3,10 +3,6 @@ import { Repository } from "../models/Repository.js";
 import { ingestRepository } from "../services/ingestion.service.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-/**
- * POST /api/repositories/index
- * Starts indexing a GitHub repository.
- */
 export async function indexRepository(
   req: Request,
   res: Response,
@@ -14,12 +10,13 @@ export async function indexRepository(
 ): Promise<void> {
   try {
     const { repoUrl } = req.body;
+    const userId = req.user!._id.toString();
 
     if (!repoUrl || typeof repoUrl !== "string") {
       throw new AppError("Repository URL is required", 400);
     }
 
-    const repositoryId = await ingestRepository(repoUrl.trim());
+    const repositoryId = await ingestRepository(repoUrl.trim(), userId);
 
     res.status(202).json({
       success: true,
@@ -31,10 +28,6 @@ export async function indexRepository(
   }
 }
 
-/**
- * GET /api/repositories/:id/status
- * Returns the current indexing status of a repository.
- */
 export async function getRepositoryStatus(
   req: Request,
   res: Response,
@@ -42,7 +35,9 @@ export async function getRepositoryStatus(
 ): Promise<void> {
   try {
     const { id } = req.params;
-    const repository = await Repository.findById(id);
+    const userId = req.user!._id.toString();
+
+    const repository = await Repository.findOne({ _id: id, userId });
 
     if (!repository) {
       throw new AppError("Repository not found", 404);
@@ -70,17 +65,15 @@ export async function getRepositoryStatus(
   }
 }
 
-/**
- * GET /api/repositories
- * Lists all indexed repositories.
- */
 export async function listRepositories(
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const repositories = await Repository.find()
+    const userId = req.user!._id.toString();
+
+    const repositories = await Repository.find({ userId })
       .sort({ createdAt: -1 })
       .select("-fileTree")
       .lean();
