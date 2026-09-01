@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { Repository } from "../models/Repository.js";
 import { ingestRepository } from "../services/ingestion.service.js";
 import { AppError } from "../middleware/errorHandler.js";
+
+const MAX_URL_LENGTH = 300;
 
 export async function indexRepository(
   req: Request,
@@ -9,11 +12,14 @@ export async function indexRepository(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { repoUrl } = req.body;
+    const { repoUrl } = req.body ?? {};
     const userId = req.user!._id.toString();
 
-    if (!repoUrl || typeof repoUrl !== "string") {
+    if (typeof repoUrl !== "string" || !repoUrl.trim()) {
       throw new AppError("Repository URL is required", 400);
+    }
+    if (repoUrl.length > MAX_URL_LENGTH) {
+      throw new AppError("Repository URL is too long", 400);
     }
 
     const repositoryId = await ingestRepository(repoUrl.trim(), userId);
@@ -35,9 +41,15 @@ export async function getRepositoryStatus(
 ): Promise<void> {
   try {
     const { id } = req.params;
-    const userId = req.user!._id.toString();
 
-    const repository = await Repository.findOne({ _id: id, userId });
+    if (!mongoose.isValidObjectId(id)) {
+      throw new AppError("Invalid repository ID", 400);
+    }
+
+    const repository = await Repository.findOne({
+      _id: id,
+      userId: req.user!._id,
+    });
 
     if (!repository) {
       throw new AppError("Repository not found", 404);
@@ -46,6 +58,7 @@ export async function getRepositoryStatus(
     res.json({
       success: true,
       data: {
+        _id: repository._id,
         id: repository._id,
         repoUrl: repository.repoUrl,
         owner: repository.owner,
@@ -54,6 +67,7 @@ export async function getRepositoryStatus(
         status: repository.status,
         filesProcessed: repository.filesProcessed,
         chunksCreated: repository.chunksCreated,
+        chunksIndexed: repository.chunksIndexed,
         error: repository.error,
         fileTree: repository.fileTree,
         createdAt: repository.createdAt,
@@ -71,17 +85,13 @@ export async function listRepositories(
   next: NextFunction
 ): Promise<void> {
   try {
-    const userId = req.user!._id.toString();
-
-    const repositories = await Repository.find({ userId })
+    const repositories = await Repository.find({ userId: req.user!._id })
       .sort({ createdAt: -1 })
       .select("-fileTree")
+      .limit(100)
       .lean();
 
-    res.json({
-      success: true,
-      data: repositories,
-    });
+    res.json({ success: true, data: repositories });
   } catch (error) {
     next(error);
   }

@@ -4,60 +4,60 @@ import { env } from "../config/env.js";
 import { CodeChunk } from "../utils/codeChunker.js";
 
 const COLLECTION_NAME = "codebase_chunks";
-const VECTOR_SIZE = 3072;
+const VECTOR_SIZE = env.EMBEDDING_DIMENSIONS;
 
 let client: QdrantClient | null = null;
+let collectionReady = false;
 
 function getClient(): QdrantClient {
   if (!client) {
     client = new QdrantClient({
       url: env.QDRANT_URL,
       ...(env.QDRANT_API_KEY ? { apiKey: env.QDRANT_API_KEY } : {}),
+      checkCompatibility: false,
     });
   }
   return client;
 }
 
+/**
+ * Recreating a populated collection silently discards every indexed repository,
+ * so a size mismatch is reported as a fatal misconfiguration instead.
+ */
 export async function ensureCollection(): Promise<void> {
-  const qdrant = getClient();
+  if (collectionReady) return;
 
-  try {
-    const { exists } = await qdrant.collectionExists(COLLECTION_NAME);
-    if (!exists) {
-      await qdrant.createCollection(COLLECTION_NAME, {
-        vectors: {
-          size: VECTOR_SIZE,
-          distance: "Cosine",
-        },
-      });
-      await createPayloadIndexes(qdrant);
-      console.log(`✓ Created Qdrant collection: ${COLLECTION_NAME}`);
-    } else {
-      const info = await qdrant.getCollection(COLLECTION_NAME);
-      const config = info.config?.params?.vectors as
-        | { size?: number }
-        | undefined;
-      if (config && typeof config.size === "number" && config.size !== VECTOR_SIZE) {
-        console.warn(
-          `  Vector size mismatch: collection has ${config.size}, expected ${VECTOR_SIZE}. Recreating...`
-        );
-        await qdrant.deleteCollection(COLLECTION_NAME);
-        await qdrant.createCollection(COLLECTION_NAME, {
-          vectors: {
-            size: VECTOR_SIZE,
-            distance: "Cosine",
-          },
-        });
-        await createPayloadIndexes(qdrant);
-        console.log(`✓ Recreated Qdrant collection: ${COLLECTION_NAME}`);
-      } else {
-        await createPayloadIndexes(qdrant);
-      }
-    }
-  } catch (error) {
-    console.error("Failed to ensure Qdrant collection:", error);
-    throw error;
+  const qdrant = getClient();
+  const { exists } = await qdrant.collectionExists(COLLECTION_NAME);
+
+  if (!exists) {
+    await qdrant.createCollection(COLLECTION_NAME, {
+      vectors: { size: VECTOR_SIZE, distance: "Cosine" },
+    });
+    await createPayloadIndexes(qdrant);
+    console.log(
+      `✓ Created Qdrant collection "${COLLECTION_NAME}" (${VECTOR_SIZE} dims)`
+    );
+    collectionReady = true;
+    return;
   }
+
+  const info = await qdrant.getCollection(COLLECTION_NAME);
+  const vectorConfig = info.config?.params?.vectors as
+    | { size?: number }
+    | undefined;
+  const existingSize = vectorConfig?.size;
+
+  if (typeof existingSize === "number" && existingSize !== VECTOR_SIZE) {
+    throw new Error(
+      `Qdrant collection "${COLLECTION_NAME}" stores ${existingSize}-dimensional vectors ` +
+        `but EMBEDDING_DIMENSIONS is ${VECTOR_SIZE}. Either set EMBEDDING_DIMENSIONS=${existingSize} ` +
+        `to keep the existing index, or delete the collection and re-index every repository.`
+    );
+  }
+
+  await createPayloadIndexes(qdrant);
+  collectionReady = true;
 }
 
 async function createPayloadIndexes(qdrant: QdrantClient): Promise<void> {
@@ -76,21 +76,32 @@ async function createPayloadIndexes(qdrant: QdrantClient): Promise<void> {
 
 export async function upsertChunks(
   chunks: CodeChunk[],
-  embeddings: number[][]
-): Promise<void> {
+  embeddings: (number[] | null)[]
+): Promise<number> {
+  if (chunks.length !== embeddings.length) {
+    throw new Error(
+      `Chunk/embedding length mismatch: ${chunks.length} chunks vs ${embeddings.length} embeddings`
+    );
+  }
+
   const qdrant = getClient();
   await ensureCollection();
 
-  const BATCH_SIZE = 100;
-
-  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
-    const batchChunks = chunks.slice(i, i + BATCH_SIZE);
-    const batchEmbeddings = embeddings.slice(i, i + BATCH_SIZE);
-
-    const points = batchChunks
-      .map((chunk, idx) => ({
+  const points = chunks
+    .map((chunk, index) => ({ chunk, vector: embeddings[index] }))
+    .filter(
+      (item): item is { chunk: CodeChunk; vector: number[] } =>
+        Array.isArray(item.vector) && item.vector.length > 0
+    )
+    .map(({ chunk, vector }) => {
+      if (vector.length !== VECTOR_SIZE) {
+        throw new Error(
+          `Embedding for ${chunk.metadata.filePath} has ${vector.length} dimensions, expected ${VECTOR_SIZE}`
+        );
+      }
+      return {
         id: uuidv4(),
-        vector: batchEmbeddings[idx],
+        vector,
         payload: {
           repositoryId: chunk.metadata.repositoryId,
           filePath: chunk.metadata.filePath,
@@ -100,25 +111,22 @@ export async function upsertChunks(
           chunkIndex: chunk.metadata.chunkIndex,
           content: chunk.content,
         },
-      }))
-      .filter((point) => point.vector && point.vector.length > 0);
+      };
+    });
 
-    if (points.length === 0) {
-      console.warn(`  ⚠ Skipping batch — all ${batchChunks.length} embeddings were empty`);
-      continue;
-    }
+  if (points.length === 0) {
+    return 0;
+  }
 
-    if (points.length < batchChunks.length) {
-      console.warn(
-        `  ⚠ Skipped ${batchChunks.length - points.length} chunks with empty embeddings`
-      );
-    }
-
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < points.length; i += BATCH_SIZE) {
     await qdrant.upsert(COLLECTION_NAME, {
       wait: true,
-      points,
+      points: points.slice(i, i + BATCH_SIZE),
     });
   }
+
+  return points.length;
 }
 
 export interface SearchResult {
@@ -140,12 +148,7 @@ export async function searchSimilar(
   const results = await qdrant.query(COLLECTION_NAME, {
     query: queryVector,
     filter: {
-      must: [
-        {
-          key: "repositoryId",
-          match: { value: repositoryId },
-        },
-      ],
+      must: [{ key: "repositoryId", match: { value: repositoryId } }],
     },
     with_payload: true,
     limit: topK,
@@ -161,19 +164,19 @@ export async function searchSimilar(
   }));
 }
 
-export async function deleteByRepository(
-  repositoryId: string
-): Promise<void> {
+export async function deleteByRepository(repositoryId: string): Promise<void> {
   const qdrant = getClient();
+  await ensureCollection();
 
   await qdrant.delete(COLLECTION_NAME, {
+    wait: true,
     filter: {
-      must: [
-        {
-          key: "repositoryId",
-          match: { value: repositoryId },
-        },
-      ],
+      must: [{ key: "repositoryId", match: { value: repositoryId } }],
     },
   });
+}
+
+export async function checkQdrantHealth(): Promise<void> {
+  const qdrant = getClient();
+  await qdrant.getCollections();
 }

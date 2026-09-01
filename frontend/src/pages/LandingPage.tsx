@@ -2,10 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
-  GitBranch,
-  MessageSquare,
   Code2,
-  Search,
   ArrowRight,
   FolderGit2,
   Loader2,

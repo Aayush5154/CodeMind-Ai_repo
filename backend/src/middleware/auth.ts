@@ -16,25 +16,38 @@ export async function authenticate(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    res.status(401).json({
+      success: false,
+      message: "Authentication required. Please log in.",
+    });
+    return;
+  }
+
+  const token = authHeader.slice(7).trim();
+
+  let decoded: { id: string };
   try {
-    const authHeader = req.headers.authorization;
+    decoded = jwt.verify(token, env.JWT_SECRET) as { id: string };
+  } catch (error) {
+    const expired = (error as Error)?.name === "TokenExpiredError";
+    res.status(401).json({
+      success: false,
+      message: expired
+        ? "Your session has expired. Please log in again."
+        : "Invalid authentication token. Please log in again.",
+    });
+    return;
+  }
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required. Please log in.",
-      });
-      return;
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string };
-
+  try {
     const user = await User.findById(decoded.id);
     if (!user) {
       res.status(401).json({
         success: false,
-        message: "User not found. Please log in again.",
+        message: "Account no longer exists. Please log in again.",
       });
       return;
     }
@@ -42,9 +55,7 @@ export async function authenticate(
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "Invalid or expired token. Please log in again.",
-    });
+    // A database failure is not an auth failure; let the error handler answer 500.
+    next(error);
   }
 }

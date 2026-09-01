@@ -1,5 +1,6 @@
 import { embedQuery } from "./embedding.service.js";
 import { searchSimilar, SearchResult } from "./vector.service.js";
+import { AppError } from "../middleware/errorHandler.js";
 
 export interface RetrievalResult {
   context: string;
@@ -19,8 +20,14 @@ export async function retrieveContext(
   try {
     queryVector = await embedQuery(question);
   } catch (err: any) {
-    console.error("Failed to embed query:", err.message, err.data || "");
-    throw new Error(`Failed to generate query embedding: ${err.message}`);
+    console.error("Failed to embed query:", err.message);
+    if (/quota|429|RESOURCE_EXHAUSTED/i.test(err.message ?? "")) {
+      throw new AppError(
+        "The embedding provider's rate limit is exhausted. Please wait a minute and ask again.",
+        429
+      );
+    }
+    throw new AppError("Failed to process your question. Please try again.", 502);
   }
 
   let results: SearchResult[];
@@ -28,7 +35,7 @@ export async function retrieveContext(
     results = await searchSimilar(queryVector, repositoryId, topK);
   } catch (err: any) {
     console.error("Qdrant search failed:", err.message, err.data || "");
-    throw new Error(`Vector search failed: ${err.data?.status?.error || err.message}`);
+    throw new AppError("Vector search failed. Please try again.", 502);
   }
 
   if (results.length === 0) {
@@ -52,8 +59,6 @@ export async function retrieveContext(
     ].join("\n");
   });
 
-  const context = contextParts.join("\n");
-
   const sourceMap = new Map<
     string,
     { filePath: string; startLine: number; endLine: number }
@@ -70,7 +75,7 @@ export async function retrieveContext(
   }
 
   return {
-    context,
+    context: contextParts.join("\n"),
     sources: Array.from(sourceMap.values()),
   };
 }

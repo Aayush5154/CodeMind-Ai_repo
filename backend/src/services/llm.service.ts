@@ -1,6 +1,7 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { env } from "../config/env.js";
+import { AppError } from "../middleware/errorHandler.js";
 
 let llmInstance: ChatGoogleGenerativeAI | null = null;
 
@@ -11,6 +12,7 @@ function getLLM(): ChatGoogleGenerativeAI {
       model: env.LLM_MODEL,
       temperature: 0.1,
       maxOutputTokens: 2048,
+      maxRetries: 3,
     });
   }
   return llmInstance;
@@ -51,22 +53,52 @@ export async function generateAnswer(
 ): Promise<string> {
   const llm = getLLM();
 
-  const history = chatHistory.map((msg) => {
-    if (msg.role === "user") {
-      return ["human" as const, msg.content] as [string, string];
+  const history = chatHistory.map(
+    (msg) =>
+      [msg.role === "user" ? "human" : "assistant", msg.content] as [
+        string,
+        string
+      ]
+  );
+
+  try {
+    const response = await chatPrompt.pipe(llm).invoke({
+      context,
+      question,
+      history,
+    });
+
+    const answer =
+      typeof response.content === "string"
+        ? response.content
+        : JSON.stringify(response.content);
+
+    if (!answer.trim()) {
+      throw new AppError(
+        "The model returned an empty response. Please rephrase your question.",
+        502
+      );
     }
-    return ["assistant" as const, msg.content] as [string, string];
-  });
 
-  const chain = chatPrompt.pipe(llm);
+    return answer;
+  } catch (error: any) {
+    if (error instanceof AppError) throw error;
 
-  const response = await chain.invoke({
-    context,
-    question,
-    history,
-  });
+    const message = error?.message ?? "";
+    console.error("LLM generation failed:", message.slice(0, 300));
 
-  return typeof response.content === "string"
-    ? response.content
-    : JSON.stringify(response.content);
+    if (/quota|429|RESOURCE_EXHAUSTED/i.test(message)) {
+      throw new AppError(
+        "The AI provider's rate limit is exhausted. Please wait a minute and try again.",
+        429
+      );
+    }
+    if (/SAFETY|blocked/i.test(message)) {
+      throw new AppError(
+        "The model declined to answer this question. Please rephrase it.",
+        422
+      );
+    }
+    throw new AppError("Failed to generate an answer. Please try again.", 502);
+  }
 }

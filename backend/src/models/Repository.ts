@@ -1,14 +1,17 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export type RepositoryStatus = "pending" | "processing" | "completed" | "failed";
+
 export interface IRepository extends Document {
   userId: mongoose.Types.ObjectId;
   repoUrl: string;
   owner: string;
   name: string;
   branch: string;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: RepositoryStatus;
   filesProcessed: number;
   chunksCreated: number;
+  chunksIndexed: number;
   error?: string;
   fileTree?: string[];
   createdAt: Date;
@@ -29,6 +32,7 @@ const repositorySchema = new Schema<IRepository>(
     },
     filesProcessed: { type: Number, default: 0 },
     chunksCreated: { type: Number, default: 0 },
+    chunksIndexed: { type: Number, default: 0 },
     error: { type: String },
     fileTree: [{ type: String }],
   },

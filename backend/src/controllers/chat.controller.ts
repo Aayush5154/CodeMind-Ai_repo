@@ -1,10 +1,41 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { ChatSession } from "../models/ChatSession.js";
 import { Message, ISource } from "../models/Message.js";
-import { Repository } from "../models/Repository.js";
+import { Repository, type IRepository } from "../models/Repository.js";
 import { retrieveContext } from "../services/retrieval.service.js";
 import { generateAnswer, ChatHistoryMessage } from "../services/llm.service.js";
 import { AppError } from "../middleware/errorHandler.js";
+
+const MAX_QUESTION_LENGTH = 2000;
+const HISTORY_WINDOW = 10;
+
+async function findOwnedRepository(
+  repositoryId: unknown,
+  userId: mongoose.Types.ObjectId
+): Promise<IRepository> {
+  if (
+    typeof repositoryId !== "string" ||
+    !mongoose.isValidObjectId(repositoryId)
+  ) {
+    throw new AppError("A valid repository ID is required", 400);
+  }
+
+  const repository = await Repository.findOne({ _id: repositoryId, userId });
+  if (!repository) {
+    throw new AppError("Repository not found", 404);
+  }
+  if (repository.status !== "completed") {
+    throw new AppError(
+      repository.status === "failed"
+        ? `This repository failed to index: ${repository.error ?? "unknown error"}`
+        : "This repository is still being indexed. Please wait for it to finish.",
+      409
+    );
+  }
+
+  return repository;
+}
 
 export async function createSession(
   req: Request,
@@ -12,21 +43,15 @@ export async function createSession(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { repositoryId } = req.body;
+    const repository = await findOwnedRepository(
+      req.body?.repositoryId,
+      req.user!._id as mongoose.Types.ObjectId
+    );
 
-    if (!repositoryId) {
-      throw new AppError("Repository ID is required", 400);
-    }
-
-    const repository = await Repository.findOne({ _id: repositoryId, userId: req.user!._id });
-    if (!repository) {
-      throw new AppError("Repository not found", 404);
-    }
-    if (repository.status !== "completed") {
-      throw new AppError("Repository is not yet indexed", 400);
-    }
-
-    const session = await ChatSession.create({ repositoryId });
+    const session = await ChatSession.create({
+      repositoryId: repository._id,
+      userId: req.user!._id,
+    });
 
     res.status(201).json({
       success: true,
@@ -46,56 +71,70 @@ export async function askQuestion(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { repositoryId, sessionId, question } = req.body;
+    const { repositoryId, sessionId, question } = req.body ?? {};
+    const userId = req.user!._id as mongoose.Types.ObjectId;
 
-    if (!repositoryId || !question) {
-      throw new AppError("Repository ID and question are required", 400);
+    if (typeof question !== "string" || !question.trim()) {
+      throw new AppError("A question is required", 400);
+    }
+    if (question.length > MAX_QUESTION_LENGTH) {
+      throw new AppError(
+        `Question is too long (max ${MAX_QUESTION_LENGTH} characters)`,
+        400
+      );
     }
 
-    const repository = await Repository.findOne({ _id: repositoryId, userId: req.user!._id });
-    if (!repository) {
-      throw new AppError("Repository not found", 404);
-    }
-    if (repository.status !== "completed") {
-      throw new AppError("Repository is not yet indexed", 400);
-    }
+    const repository = await findOwnedRepository(repositoryId, userId);
 
     let session;
-    if (sessionId) {
-      session = await ChatSession.findById(sessionId);
+    if (sessionId !== undefined && sessionId !== null && sessionId !== "") {
+      if (!mongoose.isValidObjectId(sessionId)) {
+        throw new AppError("Invalid session ID", 400);
+      }
+      // Scoping by userId prevents reading or appending to another user's session.
+      session = await ChatSession.findOne({ _id: sessionId, userId });
       if (!session) {
         throw new AppError("Chat session not found", 404);
       }
+      if (session.repositoryId.toString() !== repository._id.toString()) {
+        throw new AppError(
+          "This chat session belongs to a different repository",
+          400
+        );
+      }
     } else {
-      session = await ChatSession.create({ repositoryId });
+      session = await ChatSession.create({
+        repositoryId: repository._id,
+        userId,
+      });
     }
+
+    const trimmedQuestion = question.trim();
+
+    // History is read before the new question is stored so the current turn is
+    // not duplicated into the prompt.
+    const priorMessages = await Message.find({ sessionId: session._id })
+      .sort({ createdAt: -1 })
+      .limit(HISTORY_WINDOW)
+      .lean();
+
+    const chatHistory: ChatHistoryMessage[] = priorMessages
+      .reverse()
+      .map((msg) => ({ role: msg.role, content: msg.content }));
 
     await Message.create({
       sessionId: session._id,
       role: "user",
-      content: question,
+      content: trimmedQuestion,
       sources: [],
     });
 
-    const recentMessages = await Message.find({ sessionId: session._id })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .lean();
-
-    const chatHistory: ChatHistoryMessage[] = recentMessages
-      .reverse()
-      .slice(0, -1)
-      .map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
-
     const { context, sources } = await retrieveContext(
-      question,
-      repositoryId
+      trimmedQuestion,
+      repository._id.toString()
     );
 
-    const answer = await generateAnswer(question, context, chatHistory);
+    const answer = await generateAnswer(trimmedQuestion, context, chatHistory);
 
     const assistantMessage = await Message.create({
       sessionId: session._id,
@@ -126,19 +165,23 @@ export async function getChatHistory(
   try {
     const { id } = req.params;
 
-    const session = await ChatSession.findById(id);
+    if (!mongoose.isValidObjectId(id)) {
+      throw new AppError("Invalid session ID", 400);
+    }
+
+    const session = await ChatSession.findOne({
+      _id: id,
+      userId: req.user!._id,
+    });
     if (!session) {
       throw new AppError("Chat session not found", 404);
     }
 
-    const messages = await Message.find({ sessionId: id })
+    const messages = await Message.find({ sessionId: session._id })
       .sort({ createdAt: 1 })
       .lean();
 
-    res.json({
-      success: true,
-      data: messages,
-    });
+    res.json({ success: true, data: messages });
   } catch (error) {
     next(error);
   }
