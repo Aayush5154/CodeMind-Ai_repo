@@ -139,9 +139,9 @@ async function embedBatchWithRetry(
         })),
       });
 
-      const vectors = response.embeddings.map((e) => e.values ?? []);
+      const vectors = response.embeddings.map((e: any) => e.values ?? []);
 
-      const emptyCount = vectors.filter((v) => v.length === 0).length;
+      const emptyCount = vectors.filter((v: any) => v.length === 0).length;
       if (emptyCount > 0) {
         throw new Error(
           `Embedding API returned ${emptyCount} empty vector(s) out of ${texts.length}. ` +
