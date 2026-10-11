@@ -102,6 +102,29 @@ async function start(): Promise<void> {
     console.log(
       `  CORS: ${env.CORS_ORIGINS.length > 0 ? env.CORS_ORIGINS.join(", ") : "all origins (development)"}`
     );
+
+    // ─── Self-ping keep-alive (production only) ──────────────────────────
+    // Render free tier spins down after 15 min of inactivity. Pinging the
+    // local health endpoint every 14 min keeps the service warm without any
+    // external dependency or GitHub Actions secret.
+    if (env.isProduction) {
+      const healthUrl = `http://localhost:${env.PORT}/api/health`;
+      const KEEP_ALIVE_MS = 14 * 60 * 1_000; // 14 minutes
+
+      const keepAliveTimer = setInterval(async () => {
+        try {
+          const res = await fetch(healthUrl, { signal: AbortSignal.timeout(10_000) });
+          console.log(`Keep-alive ping → ${res.status}`);
+        } catch (err) {
+          console.warn("Keep-alive ping failed:", err instanceof Error ? err.message : err);
+        }
+      }, KEEP_ALIVE_MS);
+
+      // Don't let the timer prevent graceful shutdown
+      keepAliveTimer.unref();
+
+      console.log(`  Keep-alive self-ping enabled (every 14 min → ${healthUrl})`);
+    }
   });
 
   server.keepAliveTimeout = 65_000;

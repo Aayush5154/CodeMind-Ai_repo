@@ -97,7 +97,7 @@ export const env: EnvConfig = {
   QDRANT_API_KEY: readString("QDRANT_API_KEY", ""),
   LLM_PROVIDER: readString("LLM_PROVIDER", "gemini"),
   LLM_API_KEY: readString("LLM_API_KEY"),
-  LLM_MODEL: readString("LLM_MODEL", "gemini-2.5-flash"),
+  LLM_MODEL: readString("LLM_MODEL", "gemini-3.6-flash"),
   EMBEDDING_MODEL: readString("EMBEDDING_MODEL", "gemini-embedding-001"),
   EMBEDDING_DIMENSIONS: readNumber("EMBEDDING_DIMENSIONS", 3072),
   EMBEDDING_REQUESTS_PER_MINUTE: readNumber("EMBEDDING_REQUESTS_PER_MINUTE", 90),

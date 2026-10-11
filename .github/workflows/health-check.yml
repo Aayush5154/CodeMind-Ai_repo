@@ -1,0 +1,54 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Keep-Alive Ping — prevents Render free-tier cold starts
+#
+# Sends an HTTP GET to the backend health endpoint every 14 minutes.
+# The URL is read from the repository secret RENDER_HEALTH_URL so nothing
+# private is committed to the repo.
+#
+# Limitations:
+#   • GitHub Actions cron can be delayed by up to 15 minutes under load.
+#   • Render may still restart or suspend the service independently.
+#   • This does NOT guarantee the backend will never sleep; it only reduces
+#     the probability of cold starts during active hours.
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Every 14 minutes — Render free tier sleeps after ~15 min of inactivity
+    - cron: "*/14 * * * *"
+
+  # Allow manual trigger from the Actions tab for testing
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Ping health endpoint
+        env:
+          HEALTH_URL: ${{ secrets.RENDER_HEALTH_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "::error::RENDER_HEALTH_URL secret is not set. Add it in Settings → Secrets → Actions."
+            exit 1
+          fi
+
+          echo "Pinging $HEALTH_URL ..."
+          HTTP_STATUS=$(curl -s -o /tmp/health_response.json -w "%{http_code}" \
+                        --max-time 30 --retry 2 --retry-delay 5 \
+                        "$HEALTH_URL")
+
+          echo "HTTP status: $HTTP_STATUS"
+          cat /tmp/health_response.json
+          echo ""
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✓ Backend is awake and healthy."
+          else
+            echo "::warning::Health check returned HTTP $HTTP_STATUS"
+            exit 1
+          fi

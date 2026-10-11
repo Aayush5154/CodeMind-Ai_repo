@@ -70,7 +70,7 @@ QDRANT_API_KEY=your_qdrant_api_key
 # LLM Configuration
 LLM_PROVIDER=gemini # or openai
 LLM_API_KEY=your_llm_api_key
-LLM_MODEL=gemini-2.5-flash
+LLM_MODEL=gemini-3.6-flash
 
 # Embedding Configuration
 EMBEDDING_MODEL=text-embedding-004
